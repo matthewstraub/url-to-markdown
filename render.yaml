@@ -1,11 +1,10 @@
 services:
   - type: web
     name: url-to-markdown
-    runtime: node
+    runtime: static
     buildCommand: pnpm install && pnpm run build
-    startCommand: pnpm run start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: "3000"
+    staticPublishPath: ./dist/public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -2,6 +2,7 @@
  * URL to Markdown — Terminal Aesthetic
  * Design: Dark charcoal background, monospace typography, green/cyan accents
  * Layout: Single-column vertical workflow, terminal session feel
+ * CORS: Uses a Cloudflare Worker proxy for reliable CORS-free fetching
  */
 
 import { useState, useRef, useCallback } from "react";
@@ -10,6 +11,10 @@ import { Download, Copy, Check, Terminal, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 type Status = "idle" | "fetching" | "converting" | "done" | "error";
+
+// The Cloudflare Worker proxy URL — set via VITE_PROXY_URL env var or fallback
+const PROXY_URL =
+  import.meta.env.VITE_PROXY_URL || "https://url-to-markdown-proxy.matthewstraub.workers.dev";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -20,7 +25,7 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const fetchPage = async (targetUrl: string): Promise<string> => {
-    const response = await fetch("/api/fetch", {
+    const response = await fetch(PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: targetUrl }),
@@ -29,7 +34,11 @@ export default function Home() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || `Server error: ${response.status}`);
+      throw new Error(data.error || `Proxy error: ${response.status}`);
+    }
+
+    if (!data.html || data.html.trim().length === 0) {
+      throw new Error("The page returned empty content.");
     }
 
     return data.html;
@@ -131,7 +140,8 @@ export default function Home() {
       const parsed = new URL(url);
       const pathParts = parsed.pathname.split("/").filter(Boolean);
       if (pathParts.length > 0) {
-        filename = pathParts[pathParts.length - 1].replace(/\.\w+$/, "") + ".md";
+        filename =
+          pathParts[pathParts.length - 1].replace(/\.\w+$/, "") + ".md";
       } else {
         filename = parsed.hostname.replace(/\./g, "-") + ".md";
       }
@@ -321,7 +331,8 @@ export default function Home() {
       <footer className="border-t border-border/30 py-3">
         <div className="container">
           <p className="text-xs text-muted-foreground/40 text-center">
-            Markdown conversion happens in your browser. The server only fetches the page HTML.
+            Markdown conversion happens in your browser. A Cloudflare Worker
+            proxies the page fetch.
           </p>
         </div>
       </footer>

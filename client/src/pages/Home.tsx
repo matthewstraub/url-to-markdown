@@ -14,7 +14,7 @@ type Status = "idle" | "fetching" | "converting" | "done" | "error";
 
 // The Cloudflare Worker proxy URL — set via VITE_PROXY_URL env var or fallback
 const PROXY_URL =
-  import.meta.env.VITE_PROXY_URL || "https://url-to-markdown-proxy.matthewstraub.workers.dev";
+  import.meta.env.VITE_PROXY_URL || "https://url-to-markdown-proxy.matt-straub.workers.dev";
 
 export default function Home() {
   const [url, setUrl] = useState("");

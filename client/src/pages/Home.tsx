@@ -9,12 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Download, Copy, Check, Terminal, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-// CORS proxies to try in order
-const CORS_PROXIES = [
-  "https://api.allorigins.win/raw?url=",
-  "https://corsproxy.io/?",
-];
-
 type Status = "idle" | "fetching" | "converting" | "done" | "error";
 
 export default function Home() {
@@ -25,18 +19,20 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fetchWithProxy = async (targetUrl: string): Promise<string> => {
-    for (const proxy of CORS_PROXIES) {
-      try {
-        const response = await fetch(proxy + encodeURIComponent(targetUrl));
-        if (response.ok) {
-          return await response.text();
-        }
-      } catch {
-        continue;
-      }
+  const fetchPage = async (targetUrl: string): Promise<string> => {
+    const response = await fetch("/api/fetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: targetUrl }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Server error: ${response.status}`);
     }
-    throw new Error("All CORS proxies failed. The URL may be unreachable.");
+
+    return data.html;
   };
 
   const convertToMarkdown = async (html: string): Promise<string> => {
@@ -96,7 +92,7 @@ export default function Home() {
       setMarkdown("");
 
       try {
-        const html = await fetchWithProxy(finalUrl);
+        const html = await fetchPage(finalUrl);
 
         setStatus("converting");
         setStatusMessage("Converting HTML to Markdown...");
@@ -308,7 +304,7 @@ export default function Home() {
                 <p>
                   The page content will be fetched, converted to Markdown,
                 </p>
-                <p>and made available for download — all in your browser.</p>
+                <p>and made available for download.</p>
               </div>
               <div className="mt-8 text-muted-foreground/20 text-xs">
                 <p>Supports articles, blog posts, documentation pages.</p>
@@ -325,7 +321,7 @@ export default function Home() {
       <footer className="border-t border-border/30 py-3">
         <div className="container">
           <p className="text-xs text-muted-foreground/40 text-center">
-            All processing happens locally in your browser. No data is sent to any server.
+            Markdown conversion happens in your browser. The server only fetches the page HTML.
           </p>
         </div>
       </footer>

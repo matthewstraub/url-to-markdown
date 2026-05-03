@@ -11,7 +11,7 @@ A web-based tool that converts any web page into clean Markdown. Paste a URL, cl
 The application follows a two-stage pipeline. When a user submits a URL, the browser sends a `POST` request to a Cloudflare Worker, which fetches the target page's HTML and returns it as JSON. The browser then passes that HTML through Turndown.js to produce Markdown output. This architecture keeps the conversion logic client-side while offloading the network fetch to a serverless function that is not subject to browser CORS policies.
 
 ```
-┌──────────────┐       POST {url}       ┌────────────────────┐      GET url       ┌──────────────┐
+┌──────────────┐       POST {url}        ┌────────────────────┐      GET url        ┌──────────────┐
 │              │ ────────────────────▶   │                    │ ──────────────────▶ │              │
 │   Browser    │                         │ Cloudflare Worker  │                     │  Target Site │
 │  (Turndown)  │   ◀──────────────────── │   (CORS Proxy)     │ ◀────────────────── │              │

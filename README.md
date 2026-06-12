@@ -2,8 +2,6 @@
 
 A web-based tool that converts any web page into clean Markdown. Paste a URL, click Fetch, and download the result as a `.md` file. The HTML-to-Markdown conversion runs entirely in the browser using [Turndown.js](https://github.com/mixmark-io/turndown), while a lightweight [Cloudflare Worker](https://developers.cloudflare.com/workers/) handles the page fetch to avoid CORS restrictions.
 
-**Live site:** [url-to-markdown-wr2f.onrender.com](https://url-to-markdown-wr2f.onrender.com)
-
 ---
 
 ## How It Works
